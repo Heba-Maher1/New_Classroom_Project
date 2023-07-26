@@ -14,11 +14,11 @@
           @method('delete')
           <button type="submit" class="btn"><i class="fa-solid fa-trash"></i></button> 
         </form>
-        <form action="{{ route ('topics.create' , $id)}}" method="post">
+        {{-- <form action="{{ route ('topics.create' , $id)}}" method="post">
           @csrf
           @method('get')
           <button type="submit" class="btn"><i class="fa-solid fa-plus"></i></button>
-        </form>
+        </form> --}}
       </div>
    </div>
 </div>

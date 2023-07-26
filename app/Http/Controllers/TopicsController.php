@@ -21,7 +21,7 @@ class TopicsController extends Controller
         return view('topics.create' , compact('classroom'));
     }
 
-    public function store(Request $request, Classroom $classroom): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
                 $topic = new Topic();
                 $topic->name = $request->post('name');

@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClassroomRequest;
 use App\Models\Classroom;
+use App\Models\Scopes\UserClassroomScope;
 use App\Models\Topic;
+use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 
@@ -15,9 +20,16 @@ class ClassroomsController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
-        $classrooms = Classroom::orderBy('updated_at' , 'DESC')->get();
+
+        $classrooms = Classroom::Active()->recent()->orderBy('created_at' , 'DESC')->get();
+
         $success = session('success');
         return view('classrooms.index' , compact('classrooms' , 'success'));
     }
@@ -52,7 +64,24 @@ class ClassroomsController extends Controller
         $validated['code'] = Str::random(8);
         $validated['user_id'] = Auth::id(); //Auth::user()->id
 
-        $classroom = Classroom::create($validated);
+        DB::beginTransaction();
+
+        try{
+
+            $classroom = Classroom::create($validated);
+    
+    
+            $classroom->join(Auth::id() , 'teacher');
+
+            DB::commit();
+
+        }catch(QueryException $e){
+            DB::rollBack();
+            return back()->with('error' , $e->getMessage())
+            ->withInput();
+        } 
+
+        
 
         return redirect()->route('classrooms.index')
                          ->with('success' , 'Classroom Created')
@@ -72,9 +101,15 @@ class ClassroomsController extends Controller
             abort(404);
         }
 
+        $invitation_link = URL::SignedRoute('classrooms.join' , [
+            'classroom' => $classroom->id,
+            'code' => $classroom->code,
+        ]) ;
+
         return view('classrooms.show' , [
             'classroom' => $classroom,
             'topics' => $topics,
+            'invitation_link' => $invitation_link,
 
         ]);
     }

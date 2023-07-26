@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClassroomsController;
+use App\Http\Controllers\JoinClassroomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TopicsController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth'])->group(function(){
+
     Route::prefix('/classrooms/trashed')
     ->as('classrooms.')
     ->controller(ClassroomsController::class)
@@ -51,16 +53,21 @@ Route::middleware(['auth'])->group(function(){
         Route::put('/{topic}' , 'restore')->name('restore');
         Route::delete('/{topic}' , 'forceDelete')->name('force-delete');
     });
-    Route::resource('/classrooms' , ClassroomsController::class);
-    // Route::resources([
-    //     'topics'=> TopicsController::class,
-    //     'classrooms'=> ClassroomsController::class,
-    // ]);
+
+
+    Route::get('/classrooms/{classroom}/join' , [JoinClassroomController::class , 'create'])
+    ->middleware('signed')
+    ->name('classrooms.join');
+    Route::post('/classrooms/{classroom}/join' , [JoinClassroomController::class , 'store']);
+    
+    
     Route::get('/topics/create/{classroom}' , [TopicsController::class ,'create'])->name('topics.create');
     Route::post('/topics' , [TopicsController::class , 'store'])->name('topics.store');
     Route::get('/topics/{id}' , [TopicsController::class ,'show'])->name('topics.show')->where(['id' => '\d+']);
     Route::get('/topics/{id}/edit' , [TopicsController::class ,'edit'])->name('topics.edit')->where(['id' => '\d+']);
     Route::put('/topics/{id}' , [TopicsController::class ,'update'])->name('topics.update')->where(['id' => '\d+']);
     Route::delete('/topics/{id}' , [TopicsController::class ,'destroy'])->name('topics.destroy')->where(['id' => '\d+']);
+    
+    Route::resource('/classrooms' , ClassroomsController::class);
 });
 

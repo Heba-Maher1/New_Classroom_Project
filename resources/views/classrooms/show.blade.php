@@ -7,6 +7,7 @@
             <div class="col-md-3">
                 <div class="border rounded p-3 mb-4 text-center">
                     <span class="text-success fs-3 ">{{ $classroom->code }}</span>
+                    <p><a href="{{ $invitation_link }}">{{ $invitation_link }}</a></p>
                 </div>
                 <div class="border rounded p-3 mb-4">
                     <p class="text-secondary font-weight-bold fs-5 ">Required Task</p>
