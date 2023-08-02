@@ -1,7 +1,12 @@
 <div class="card mb-4 " style="width:20rem; height:18rem;">
     <div class="image ">
+      @if('storage/{{ $image }}')
       <img class="card-img-top" src="storage/{{ $image }}" alt="Card image cap" style="height:8rem;">
+      @else
+      <img class="card-img-top" src="" alt="Card image cap" style="height:8rem;">
+      @endif
     </div>
+ 
 
    <div class="card-body">
       <h5 class="card-title">{{ $name }}</h5>

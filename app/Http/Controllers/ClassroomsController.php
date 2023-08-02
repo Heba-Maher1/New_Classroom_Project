@@ -60,17 +60,15 @@ class ClassroomsController extends Controller
             $validated['cover_image_path'] = $path;
 
         }
-
-        $validated['code'] = Str::random(8);
-        $validated['user_id'] = Auth::id(); //Auth::user()->id
+// come from listener and events in booted function in the model
+        // $validated['code'] = Str::random(8);
+        // $validated['user_id'] = Auth::id(); //Auth::user()->id
 
         DB::beginTransaction();
-
         try{
 
             $classroom = Classroom::create($validated);
-    
-    
+
             $classroom->join(Auth::id() , 'teacher');
 
             DB::commit();
@@ -80,8 +78,6 @@ class ClassroomsController extends Controller
             return back()->with('error' , $e->getMessage())
             ->withInput();
         } 
-
-        
 
         return redirect()->route('classrooms.index')
                          ->with('success' , 'Classroom Created')
@@ -182,7 +178,7 @@ class ClassroomsController extends Controller
     {
         $classroom = Classroom::withTrashed()->findOrFail($id);
         $classroom->forceDelete();
-        Classroom::deleteCoverImage($classroom->cover_image_path);
+        // Classroom::deleteCoverImage($classroom->cover_image_path);
 
         return redirect()->route('classrooms.index')->with('success' , "classroom ({$classroom->name}) deleted forever!")->with('error' , 'error in delete forever' );
     }

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\ClassroomsController;
+use App\Http\Controllers\ClassworkController;
 use App\Http\Controllers\JoinClassroomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TopicsController;
+use App\Models\Classwork;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -69,5 +71,8 @@ Route::middleware(['auth'])->group(function(){
     Route::delete('/topics/{id}' , [TopicsController::class ,'destroy'])->name('topics.destroy')->where(['id' => '\d+']);
     
     Route::resource('/classrooms' , ClassroomsController::class);
+
+    Route::resource('classrooms.classworks' , ClassworkController::class);
+
 });
 

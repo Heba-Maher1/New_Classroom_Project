@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use App\Models\Scopes\UserClassroomScope;
+use App\Observers\ClassroomObserver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Classroom extends Model
 {
@@ -24,11 +27,43 @@ class Classroom extends Model
 
     protected static function booted()
     {
+
+        static::observe(ClassroomObserver::class);
         // static::addGlobalScope('user' , function(Builder $query){
         //     $query->where('user_id' , '=', Auth::id());
         // });
 
         static::addGlobalScope(new UserClassroomScope);
+
+        static::creating(function(Classroom $classroom){
+            $classroom->code = Str::random(8);
+            $classroom->user_id = Auth::id();
+        });
+
+        // static::forceDeleted(function(Classroom $classroom){
+        //     static::deleteCoverImage($classroom->cover_image_path);
+        // });
+
+        // static::deleted(function(Classroom $classroom){
+        //     $classroom->status = 'deleted';
+        //     $classroom->save();
+        // });
+
+        // static::restored(function(Classroom $classroom){
+        //     $classroom->status = 'active';
+        //     $classroom->save();
+        // });
+    }
+
+    public function classworks(): HasMany
+    {
+        // return $this->hasMany(Classwork::class);
+        return $this->hasMany(Classwork::class , 'classroom_id' , 'id');
+    }
+
+    public function topics(): HasMany
+    {
+        return $this->hasMany(Topic::class , 'classroom_id' , 'id');
     }
 
     public function getRouteKeyName()
@@ -77,4 +112,28 @@ class Classroom extends Model
             'created_at' => now(), // object of time class , return the current time
         ]);
     }
+//1- example of an existing attribute
+    // get{attribute name}Attribute
+    public function getNameAttribute($value)
+    {
+        return strtoupper($value);
+    }
+
+//2- example of non existing attribute
+    // public function getCoverImageUrlAttribute()
+    // {
+    //     if($this->cover_image_path){
+    //         return Storage::disk('public')->url($this->cover_image_path);
+    //     }
+    //     return 'https://placehold.co/800x300';
+    // }
+
+    public function getUrlAttribute()
+    {
+        return route('classrooms.show' , $this->id);
+    }
+
+    // Creating , Created / Updating , Updated / Saving , Saved => contain if create and update 
+    //Deleting , Deleted / Restoring , Restored / ForceDeleting , ForceDeleted
+    // Retrieved
 }
