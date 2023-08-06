@@ -1,5 +1,11 @@
 <x-main-layout title="View">
-    <div class="container">
+    <x-navbar :area="route('classrooms.show' , $classroom->id )" :ass="route('classrooms.classworks.index' , $classroom->id)" :people="route('classrooms.people' , $classroom->id)"/>
+
+
+
+
+          <div class="container">
+
       <x-alert name="success" id="success" class="alert-success" />
 
         <img class="card-img-top my-3 position-relative rounded" src="{{asset('storage/'.$classroom->cover_image_path) }}" alt="Card image cap">

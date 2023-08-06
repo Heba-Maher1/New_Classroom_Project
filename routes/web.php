@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClassroomPeopleController;
 use App\Http\Controllers\ClassroomsController;
 use App\Http\Controllers\ClassworkController;
 use App\Http\Controllers\JoinClassroomController;
@@ -74,5 +75,7 @@ Route::middleware(['auth'])->group(function(){
 
     Route::resource('classrooms.classworks' , ClassworkController::class);
 
+    Route::get('/classrooms/{classroom}/people' , [ClassroomPeopleController::class , 'index'])->name('classrooms.people');
+    Route::delete('/classrooms/{classroom}/people' , [ClassroomPeopleController::class , 'destroy'])->name('classrooms.people.destroy');
 });
 

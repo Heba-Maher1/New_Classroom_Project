@@ -1,8 +1,9 @@
 <x-main-layout title="Classrooms">
     <div class="container">
       
-      {{-- <x-alert name='error' id="error" class="alert-danger"/> --}}
-      
+      <x-alert name="success" class="alert-success"/>
+      <x-alert name="error" class="alert-danger"/>
+            
       <div class="d-flex justify-content-between align-items-center">
         <h1 class="my-4">Classrooms</h1> 
         <div>

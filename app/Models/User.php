@@ -57,4 +57,27 @@ class User extends Authenticatable
             set: fn($value) => strtolower($value)
         );
     }
+
+    public function classrooms()
+    {
+        return $this->belongsToMany(
+            Classroom::class ,       
+            'classroom_user',   
+            'user_id' ,    
+            'classroom_id' ,         
+            'id' ,              
+            'id',             
+        )->withPivot(['role' , 'created_at']);
+    }
+
+    public function createdClassrooms ()
+    {
+        return $this->hasMany(Classroom::class , 'user_id');
+    }
+
+    public function classworks()
+    {
+        return $this->belongsToMany(Classwork::class)->withPivot(['grade' , 'status' , 'submitted_at' , 'created_at'])
+               ->using(ClassworkUser::class);
+    }
 }

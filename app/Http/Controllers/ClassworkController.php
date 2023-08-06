@@ -68,13 +68,17 @@ class ClassworkController extends Controller
     public function store(Request $request ,Classroom $classroom)
     {
 
+
         $type = $this->gettype($request);
 
         $request->validate([
             'title' => ['required' , 'string' , 'max:255'],
             'description' => ['nullable' , 'string'],
             'topic_id' => ['nullable' , 'int' , 'exists:topics,id'], //exists:table-name,column-name
+            'students' => ['required', 'array'],
         ]);
+
+        // dd($request->input('students'));
 
         $request->merge([
             'user_id' => Auth::id(),
@@ -82,8 +86,11 @@ class ClassworkController extends Controller
             // 'classroom_id' => $classroom->id,
         ]);
 
-        $classroom->classworks()->create($request->all()); // there is no need to pass the classroom id because the relationship
+        $classwork = $classroom->classworks()->create($request->all()); // there is no need to pass the classroom id because the relationship
 
+        $classwork->users()->attach($request->input('students'));
+        
+        
         // Classwork::create($request->all());
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
@@ -105,11 +112,16 @@ class ClassworkController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Classroom $classroom , Classwork $classwork)
+    public function edit(Request $request ,Classroom $classroom , Classwork $classwork)
     {
+        $type = $this->getType($request);
+
+        $assigned = $classwork->users()->pluck('id')->toArray();
+
         return view('classworks.edit' ,[
             'classroom' => $classroom,
             'classwork' => $classwork,
+            'assigned' => $assigned,
         ]);
     }
 
@@ -118,24 +130,31 @@ class ClassworkController extends Controller
      */
     public function update(Request $request,Classroom $classroom , Classwork $classwork)
     {
-        $request->validate([
-            'title' => ['required' , 'string' , 'max:255'],
-            'description' => ['nullable' , 'string'],
-            'topic_id' => ['nullable' , 'int' , 'exists:topics,id'],
-        ]);
 
-        $request->merge([
-            'user_id' => Auth::id(),
-        ]);
+        $classwork->update($request->all());
 
-        $classroom->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'topic_id' => $request->topic_id,
-        ]); 
+        $classwork->users()->sync($request->input('students'));
 
-        return redirect()->route('classrooms.classworks.index' , $classroom->id)
-                         ->with('success' , 'Classwork Updated!');
+        return back()->with('success' , 'Classwork updated!');
+
+        // $request->validate([
+        //     'title' => ['required' , 'string' , 'max:255'],
+        //     'description' => ['nullable' , 'string'],
+        //     'topic_id' => ['nullable' , 'int' , 'exists:topics,id'],
+        // ]);
+
+        // $request->merge([
+        //     'user_id' => Auth::id(),
+        // ]);
+
+        // $classroom->update([
+        //     'title' => $request->title,
+        //     'description' => $request->description,
+        //     'topic_id' => $request->topic_id,
+        // ]); 
+
+        // return redirect()->route('classrooms.classworks.index' , $classroom->id)
+        //                  ->with('success' , 'Classwork Updated!');
     }
 
     /**

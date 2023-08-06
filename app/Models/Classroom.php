@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Models\Scopes\UserClassroomScope;
 use App\Observers\ClassroomObserver;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
@@ -65,6 +67,30 @@ class Classroom extends Model
     {
         return $this->hasMany(Topic::class , 'classroom_id' , 'id');
     }
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class ,       //Related model
+            'classroom_user',   //pivot table
+            'classroom_id' ,    //fk for current model in the pivot
+            'user_id' ,         // fk for related model 
+            'id' ,              // pk for current model
+            'id',               //pk for related model
+        )->withPivot(['role' , 'created_at']);
+        // ->wherePivot('role' , '=', 'teacher')
+        // ->as('join'); 
+    }
+
+    public function teacher()
+    {
+        // return $this->users; //=>collection of users
+        return $this->users()->wherePivot('role' ,'=' , 'teacher'); 
+    }
+
+    public function students()
+    {
+        return $this->users()->wherePivot('role' ,'=' , 'student'); 
+    }
 
     public function getRouteKeyName()
     {
@@ -105,12 +131,28 @@ class Classroom extends Model
 
     public function join($user_id , $role = 'student')
     {
-        DB::table('classroom_user')->insert([
-            'classroom_id' => $this->id,
-            'user_id' => $user_id,
-            'role' => $role ,
-            'created_at' => now(), // object of time class , return the current time
-        ]);
+
+        $exists = $this->users()
+        ->wherePivot('user_id' ,'=' , $user_id)
+        ->exists();
+        
+        if ($exists){
+
+            throw new Exception('User already joined the classroom');
+        }
+        //using relation 
+        $this->users()->attach($user_id ,[
+            'role' => $role,
+            'created_at' => now(),
+        ]); //insert in the pivot table
+
+        // without relation , we insert directly to the pivot table
+        // return DB::table('classroom_user')->insert([
+        //     'classroom_id' => $this->id,
+        //     'user_id' => $user_id,
+        //     'role' => $role ,
+        //     'created_at' => now(), // object of time class , return the current time
+        // ]);
     }
 //1- example of an existing attribute
     // get{attribute name}Attribute
