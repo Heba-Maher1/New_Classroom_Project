@@ -92,6 +92,11 @@ class Classroom extends Model
         return $this->users()->wherePivot('role' ,'=' , 'student'); 
     }
 
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
     public function getRouteKeyName()
     {
         return 'id';

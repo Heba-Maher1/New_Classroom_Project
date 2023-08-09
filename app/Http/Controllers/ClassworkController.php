@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Classroom;
 use App\Models\Classwork;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ClassworkController extends Controller
 {
@@ -27,7 +29,7 @@ class ClassworkController extends Controller
         return $type;
      }
 
-    public function index(Classroom $classroom)
+    public function index(Request $request ,Classroom $classroom)
     {
         // $classworks = Classwork::where('classroom_id' ,'=',$classroom->id)->where('type' , '=',Classroom::TYPE_ASSIGNMENT)->get(); without relation
         
@@ -41,11 +43,11 @@ class ClassworkController extends Controller
         ->orderBy('published_at' , 'DESC')
         ->get();
 
-        
 
         return view('classworks.index' , [
             'classroom' => $classroom,
             'classworks' => $classworks->groupBy('topic_id'),
+            'topics' => Topic::all(),
             'success' => session('success'),
         ]);
     }
@@ -58,7 +60,8 @@ class ClassworkController extends Controller
 
         $type = $this->getType($request);
 
-        
+        $topic = $classroom->topics;
+
         return view('classworks.create' , compact('classroom' , 'type'));
     }
 
@@ -67,8 +70,6 @@ class ClassworkController extends Controller
      */
     public function store(Request $request ,Classroom $classroom)
     {
-
-
         $type = $this->gettype($request);
 
         $request->validate([
@@ -78,20 +79,19 @@ class ClassworkController extends Controller
             'students' => ['required', 'array'],
         ]);
 
-        // dd($request->input('students'));
-
         $request->merge([
             'user_id' => Auth::id(),
             'type' => $type ,
-            // 'classroom_id' => $classroom->id,
+            'published_at' => now(),
         ]);
 
-        $classwork = $classroom->classworks()->create($request->all()); // there is no need to pass the classroom id because the relationship
+        DB::transaction(function() use($classroom , $request){
+            //there are two actions related to each other insert classwork and students 
+            $classwork = $classroom->classworks()->create($request->all()); // there is no need to pass the classroom id because the relationship
+            // Classwork::create($request->all());
 
-        $classwork->users()->attach($request->input('students'));
-        
-        
-        // Classwork::create($request->all());
+            $classwork->users()->attach($request->input('students'));
+        });
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
                          ->with('success' , 'Classwork Created!');
@@ -102,8 +102,9 @@ class ClassworkController extends Controller
      */
     public function show(Classroom $classroom , Classwork $classwork)
     {
-        
-        return view('classrooms.show' ,[
+        $classwork->load('comments.user');
+
+        return view('classworks.show' ,[
             'classroom' => $classroom,
             'classwork' => $classwork,
         ]);
@@ -122,6 +123,8 @@ class ClassworkController extends Controller
             'classroom' => $classroom,
             'classwork' => $classwork,
             'assigned' => $assigned,
+            'type' => $type,
+            
         ]);
     }
 
@@ -135,7 +138,8 @@ class ClassworkController extends Controller
 
         $classwork->users()->sync($request->input('students'));
 
-        return back()->with('success' , 'Classwork updated!');
+        return redirect()->route('classrooms.classworks.index' , $classroom->id)
+                         ->with('success' , 'Classwork Updated!');
 
         // $request->validate([
         //     'title' => ['required' , 'string' , 'max:255'],

@@ -41,7 +41,9 @@
         <li class="list-group-item">Create Classroom</li>
         <li class="list-group-item">Create Topic</li>
       </ul> --}}
-      {{ Auth::user()->name }}
+      <img class="rounded-circle" src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}" width="40" height="40">
+
+      
     </div>
    
     

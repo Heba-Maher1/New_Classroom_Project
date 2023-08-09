@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClassroomRequest;
 use App\Models\Classroom;
+use App\Models\Post;
 use App\Models\Scopes\UserClassroomScope;
 use App\Models\Topic;
 use Exception;
@@ -91,7 +92,7 @@ class ClassroomsController extends Controller
     {
         $classroom = Classroom::withTrashed()->findOrFail($id);
         $topics = Topic::where('classroom_id', '=', $classroom->id)->get();
-        
+
         if(!$classroom)
         {
             abort(404);
@@ -106,7 +107,6 @@ class ClassroomsController extends Controller
             'classroom' => $classroom,
             'topics' => $topics,
             'invitation_link' => $invitation_link,
-
         ]);
     }
 

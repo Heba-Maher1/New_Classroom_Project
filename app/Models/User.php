@@ -77,7 +77,18 @@ class User extends Authenticatable
 
     public function classworks()
     {
-        return $this->belongsToMany(Classwork::class)->withPivot(['grade' , 'status' , 'submitted_at' , 'created_at'])
-               ->using(ClassworkUser::class);
+        return $this->belongsToMany(Classwork::class)
+               ->using(ClassworkUser::class)
+               ->withPivot(['grade' , 'status' , 'submitted_at' , 'created_at']);
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }

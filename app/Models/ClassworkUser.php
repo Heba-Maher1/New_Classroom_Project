@@ -14,4 +14,5 @@ class ClassworkUser extends Pivot
     {
         return $this;
     }
+
 }

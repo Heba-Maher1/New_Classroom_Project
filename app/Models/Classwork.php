@@ -36,5 +36,10 @@ class Classwork extends Model
         return $this->belongsToMany(User::class)
             ->withPivot(['grade' , 'submitted_at' , 'status' , 'created_at'])
             ->using(ClassworkUser::class);
-    }            
+    }     
+    
+    public function comments()
+    {
+        return $this->morphMany(Comment::class , 'commentable')->latest();
+    }
 }

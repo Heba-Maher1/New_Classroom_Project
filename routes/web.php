@@ -3,7 +3,9 @@
 use App\Http\Controllers\ClassroomPeopleController;
 use App\Http\Controllers\ClassroomsController;
 use App\Http\Controllers\ClassworkController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\JoinClassroomController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TopicsController;
 use App\Models\Classwork;
@@ -77,5 +79,13 @@ Route::middleware(['auth'])->group(function(){
 
     Route::get('/classrooms/{classroom}/people' , [ClassroomPeopleController::class , 'index'])->name('classrooms.people');
     Route::delete('/classrooms/{classroom}/people' , [ClassroomPeopleController::class , 'destroy'])->name('classrooms.people.destroy');
+
+    Route::post('comments' , [CommentController::class , 'store'])->name('comments.store');
+
+    Route::post('posts/{classroom}' , [PostController::class , 'store'])->name('posts.store');
+    Route::delete('posts/{classroom}' , [PostController::class , 'destroy'])->name('posts.destroy');
+    Route::post('posts/{post}/comments', [PostController::class , 'store'])->name('posts.comments.store');
+
+
 });
 
