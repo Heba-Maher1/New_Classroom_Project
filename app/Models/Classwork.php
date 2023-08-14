@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use App\Enums\ClassworkType;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use PhpParser\Node\Stmt\Static_;
 
 class Classwork extends Model
 {
     use HasFactory;
 
-    const TYPE_ASSIGNMENT = 'assignment';
-    const TYPE_MATERIAL = 'material';
-    const TYPE_QUESTION= 'question';
+    const TYPE_ASSIGNMENT = ClassworkType::ASSIGNMENT;
+    const TYPE_MATERIAL = ClassworkType::MATERIAL;
+    const TYPE_QUESTION= ClassworkType::QUESTION;
 
     const STATUS_PUBLISHED = 'published';
     const STATUS_DRAFT = 'draft';
@@ -20,6 +23,42 @@ class Classwork extends Model
     protected $fillable = [
         'classroom_id' , 'user_id' , 'topic_id' , 'title' , 'description' , 'type' , 'status' , 'published_at' , 'options'
     ];
+
+    protected $casts = [
+        'options' => 'json',
+        'classroom_id' => 'integer',
+        'user_id' => 'integer',
+        'topic_id' => 'integer',
+        'published_at' => 'datetime',
+        'type' => ClassworkType::class,
+    ];
+
+    protected static function booted(){
+        Static::creating(function(Classwork $classwork) {
+            if(!$classwork->published_at){
+                $classwork->published_at = now();
+            }
+        });
+    }
+
+    public function scopeFilter(Builder $builder , $filters)
+    {
+        $builder->when($filters['search'] ?? '', function($builder , $value){
+            $builder->where(function($builder) use($value){
+                $builder->where('title' ,'LIKE',"%{$value}%")
+                        ->orWhere('description' ,'LIKE',"%{$value}%");
+            });
+        })
+        ->when($filters['type'] ?? '', function($builder , $value){
+            $builder->where('type' ,'=',"%{$value}%");
+        });
+    }
+
+    public function getPublishedDateAttribute(){
+        if($this->published_at){
+            return $this->published_at->format('Y-m-d'); 
+        }
+    }
 
     public function classroom (): BelongsTo
     {

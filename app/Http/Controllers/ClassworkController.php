@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Classroom;
 use App\Models\Classwork;
 use App\Models\Topic;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -40,13 +42,14 @@ class ClassworkController extends Controller
         
         $classworks = $classroom->classworks()
         ->with('topic') // Eager Load
-        ->orderBy('published_at' , 'DESC')
-        ->get();
+        ->filter($request->query())
+        ->orderBy('published_at')
+        ->paginate(5);
 
 
         return view('classworks.index' , [
             'classroom' => $classroom,
-            'classworks' => $classworks->groupBy('topic_id'),
+            'classworks' => $classworks/*->groupBy('topic_id')*/,
             'topics' => Topic::all(),
             'success' => session('success'),
         ]);
@@ -60,9 +63,11 @@ class ClassworkController extends Controller
 
         $type = $this->getType($request);
 
-        $topic = $classroom->topics;
+        $classwork = new Classwork();
 
-        return view('classworks.create' , compact('classroom' , 'type'));
+        $topics = $classroom->topics;
+
+        return view('classworks.create' , compact('classroom' , 'type' , 'classwork'));
     }
 
     /**
@@ -77,21 +82,30 @@ class ClassworkController extends Controller
             'description' => ['nullable' , 'string'],
             'topic_id' => ['nullable' , 'int' , 'exists:topics,id'], //exists:table-name,column-name
             'students' => ['required', 'array'],
+            'options.grade' => [Rule::requiredIf(fn() => $type == 'assignment') , 'numeric' , 'min:0'],
+            'options.due' => ['nullable' , 'date' , 'after:published_at'],
         ]);
 
         $request->merge([
             'user_id' => Auth::id(),
-            'type' => $type ,
+            'type' => $type,
             'published_at' => now(),
         ]);
 
-        DB::transaction(function() use($classroom , $request){
-            //there are two actions related to each other insert classwork and students 
-            $classwork = $classroom->classworks()->create($request->all()); // there is no need to pass the classroom id because the relationship
-            // Classwork::create($request->all());
+        try{
+            DB::transaction(function() use($classroom , $request){
+                
+                //there are two actions related to each other insert classwork and students 
+                $classwork = $classroom->classworks()->create($request->all()); // there is no need to pass the classroom id because the relationship
+                // Classwork::create($request->all());
+    
+                $classwork->users()->attach($request->input('students'));
+            });
+        }catch(QueryException $e){
+            return back()->with('error' , $e->getMessage());
+        }
 
-            $classwork->users()->attach($request->input('students'));
-        });
+       
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
                          ->with('success' , 'Classwork Created!');
@@ -115,7 +129,7 @@ class ClassworkController extends Controller
      */
     public function edit(Request $request ,Classroom $classroom , Classwork $classwork)
     {
-        $type = $this->getType($request);
+        $type = $classwork->type->value;
 
         $assigned = $classwork->users()->pluck('id')->toArray();
 
@@ -133,6 +147,16 @@ class ClassworkController extends Controller
      */
     public function update(Request $request,Classroom $classroom , Classwork $classwork)
     {
+        $type = $classwork->type;
+
+        $request->validate([
+            'title' => ['required' , 'string' , 'max:255'],
+            'description' => ['nullable' , 'string'],
+            'topic_id' => ['nullable' , 'int' , 'exists:topics,id'], //exists:table-name,column-name
+            'students' => ['required', 'array'],
+            'options.grade' => [Rule::requiredIf(fn() => $type == 'assignment') , 'numeric' , 'min:0'],
+            'options.due' => ['nullable' , 'date' , 'after:published_at'],
+        ]);
 
         $classwork->update($request->all());
 
