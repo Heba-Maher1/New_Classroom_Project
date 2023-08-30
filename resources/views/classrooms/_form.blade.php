@@ -5,19 +5,19 @@
         <label for="name">Name</label>
     </div> --}}
 
-    <x-form.form-floating name="name" placeholder="Name">
-        <x-form.input name="name" :value="$classroom->name" placeholder="Name" />
+    <x-form.form-floating name="name" placeholder="{{__('Name')}}">
+        <x-form.input name="name" :value="$classroom->name" placeholder="{{__('Name')}}" />
     </x-form.form-floating>
 
-    <x-form.form-floating name="section" placeholder="Section">
+    <x-form.form-floating name="section" placeholder="{{__('Section')}}">
         <x-form.input name="section" :value="$classroom->section" placeholder="Section" />
     </x-form.form-floating>
     
-    <x-form.form-floating name="subject" placeholder="Subject">
+    <x-form.form-floating name="subject" placeholder="{{__('Subject')}}">
         <x-form.input name="subject" :value="$classroom->subject" placeholder="Subject" />
     </x-form.form-floating>
     
-    <x-form.form-floating name="room" placeholder="Room">
+    <x-form.form-floating name="room" placeholder="{{__('Room')}}">
         <x-form.input name="room" :value="$classroom->room" placeholder="Room" />
     </x-form.form-floating>
 
@@ -26,9 +26,8 @@
         <img src="{{Storage::disk('public')->url($classroom->cover_image_path)}}" alt="">
         @endif
         <input type="file"  @class(['form-control' , 'is-invalid' => $errors->has('cover_image')]) class="form-control" name="cover_image" id="cover_image" placeholder="cover_image">
-        <label for="cover_image">Cover Image</label> 
+        <label for="cover_image">{{__("classeo")}}</label> 
     </div>
     
-    <button type="submit" class="btn btn-success">{{$button_lable}}</button>
+    <button type="submit" class="btn btn-success">{{__("$button_lable")}}</button>
 
-    

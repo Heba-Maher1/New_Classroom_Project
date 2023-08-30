@@ -1,5 +1,9 @@
 <x-main-layout title="Show">
     <div class="container pt-5">
+        
+      <x-alert name="success" class="alert-success" />
+      <x-alert name="error" class="alert-danger" />
+
         <div class="row">
             <div class="col-lg-8">
                 <div class="header d-flex">
@@ -7,7 +11,7 @@
                         <h2><span class="text-success">{{$classwork->type}}</span> / <span class="fs-4">{{$classwork->title}}</span> </h2>
                         <p class="text-secondary">{{auth()->user()->name}} &#8226; {{$classwork->submitted_at}}</p>
                         <hr class="text-success">
-                        <p class="description">{{$classwork->description}}</p>
+                        <p class="description">{!! $classwork->description !!}</p>
                         <hr class="text-success">
                     </div>
                 </div>
@@ -25,31 +29,53 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="container text-dark">
-                    <h3 class="mb-4">Comments</h3>
-                    @foreach ($classwork->comments as $comment)
-                    <div class="card mb-3">
-                        <div class="card-body d-flex">
-                            <img class="rounded-circle shadow-1-strong me-3" src="https://ui-avatars.com/api/?name={{ $comment->user->name }}" alt="avatar" width="40" height="40" />
-                            <div class="w-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="text-primary fw-bold mb-0">
-                                        {{ $comment->user->name }}
-                                    </h6>
-                                    <p class="mb-0">{{ $comment->created_at->diffForHumans(null , true, true)}}</p>
-                                </div>
-                                <p>{{ $comment->content }}</p>
-                                <div class="d-flex justify-content-between align-items-end">
-                                    <p class="small mb-0" style="color: #aaa;">
-                                        <a href="#!" class="link-grey">Remove</a> •
-                                        <a href="#!" class="link-grey">Reply</a>
-                                    </p>
+                @can('submissions.create' , [$classwork])
+                    <div class="bordered-rounded p-3 bg-light">
+                        <h4>Submissions</h4> 
+                        @if($submissions->count())
+                        <ul>
+                            @foreach ($submissions as $submission)
+                                <li><a href="{{ route('submissions.file', $submission->id)}}">File #{{ $loop->iteration }}</a></li>
+                            @endforeach
+                        </ul>
+                        @else
+                        <form action="{{ route('submissions.store' , $classwork->id)}}" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <x-form.form-floating name="files.0" placeholder="Upload Files">
+                                <x-form.input type="file" name="files[]" multiple accept="image/*" placeholder="Select Files" />
+                            </x-form.form-floating>
+                            <button type="submit" class="btn bg-green text-white">Submit</button>    
+                            
+                        </form>
+                        @endif
+                    </div>
+                    @endcan    
+                    <div class="container text-dark">
+                        <h3 class="mb-4">Comments</h3>
+                        @foreach ($classwork->comments as $comment)
+                        <div class="card mb-3">
+                            <div class="card-body d-flex">
+                                <img class="rounded-circle shadow-1-strong me-3" src="https://ui-avatars.com/api/?name={{ $comment->user->name }}" alt="avatar" width="40" height="40" />
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="text-primary fw-bold mb-0">
+                                            {{ $comment->user->name }}
+                                        </h6>
+                                        <p class="mb-0">{{ $comment->created_at->diffForHumans(null , true, true)}}</p>
+                                    </div>
+                                    <p>{{ $comment->content }}</p>
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <p class="small mb-0" style="color: #aaa;">
+                                            <a href="#!" class="link-grey">Remove</a> •
+                                            <a href="#!" class="link-grey">Reply</a>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
-                </div>
+                
             </div>
             
               

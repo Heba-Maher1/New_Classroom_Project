@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ClassworkCreated;
 use App\Models\Classroom;
 use App\Models\Classwork;
 use App\Models\Topic;
@@ -13,38 +14,42 @@ use Illuminate\Support\Facades\DB;
 
 class ClassworkController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
 
      protected function getType(Request $request)
      {
         $type = $request->query('type');
-        $allow_types = [
-            Classwork::TYPE_ASSIGNMENT , Classwork::TYPE_MATERIAL , Classwork::TYPE_QUESTION
-        ];
+        $allowed_types = [Classwork::TYPE_ASSIGNMENT, Classwork::TYPE_MATERIAL, Classwork::TYPE_QUESTION];
 
-        if(in_array($type , $allow_types)){
+        if (!in_array($type, $allowed_types)) {
             $type = Classwork::TYPE_ASSIGNMENT;
         }
-
         return $type;
      }
+     
 
     public function index(Request $request ,Classroom $classroom)
     {
-        // $classworks = Classwork::where('classroom_id' ,'=',$classroom->id)->where('type' , '=',Classroom::TYPE_ASSIGNMENT)->get(); without relation
-        
-        // $classworks = $classroom->classworks; // with relation , $classroom->classworks = $classroom->classworks()->get()
 
-        
-        // $assignments = $classroom->classworks()->where('type' ,'=',Classwork::TYPE_ASSIGNMENT)->get();
-        
+        $this->authorize('viewAny' , [Classwork::class , $classroom]);
+       
         $classworks = $classroom->classworks()
-        ->with('topic') // Eager Load
-        ->filter($request->query())
-        ->orderBy('published_at')
-        ->paginate(5);
+                ->with('topic') // Eager Load
+                ->filter($request->query())
+                ->latest('published_at')
+                // ->where(function($query){
+                //     $query->whereHas('users' , function($query){
+                //         $query->where('id' , '=' , Auth::id());
+                //     })
+                //     ->orWhere('classroom.teachers' , function($query){
+                //         $query->where('id' , '=' , Auth::id());
+                //     });
+                // })
+                ->where(function($query){
+                    $query->whereRaw('EXISTS (SELECT 1 FROM classwork_user WHERE classwork_user.classwork_id = classworks.id AND classwork_user.user_id = ? )', [Auth::id()]);
+                    $query->orWhereRaw('EXISTS (SELECT 1 FROM classroom_user WHERE classroom_user.classroom_id = classworks.classroom_id AND classroom_user.user_id = ? AND classroom_user.role = ?)' , [Auth::id() , 'teacher']);
+                })
+                ->paginate(5);
+
 
 
         return view('classworks.index' , [
@@ -53,6 +58,14 @@ class ClassworkController extends Controller
             'topics' => Topic::all(),
             'success' => session('success'),
         ]);
+
+        // $classworks = Classwork::where('classroom_id' ,'=',$classroom->id)->where('type' , '=',Classroom::TYPE_ASSIGNMENT)->get(); without relation
+        
+        // $classworks = $classroom->classworks; // with relation , $classroom->classworks = $classroom->classworks()->get()
+        
+        // $assignments = $classroom->classworks()->where('type' ,'=',Classwork::TYPE_ASSIGNMENT)->get();
+        
+        
     }
 
     /**
@@ -61,6 +74,14 @@ class ClassworkController extends Controller
     public function create(Request $request ,Classroom $classroom)
     {
 
+        $this->authorize('create' ,[Classwork::class , $classroom]);
+        
+        // $response =  Gate::inspect('classworks.create' , [$classroom]);
+        // if(!$response->allowed()){
+
+        //     abort(403 , $response->message() ?? '');
+
+        // }
         $type = $this->getType($request);
 
         $classwork = new Classwork();
@@ -75,6 +96,11 @@ class ClassworkController extends Controller
      */
     public function store(Request $request ,Classroom $classroom)
     {
+
+        // Gate::authorize('classworks.create' , [$classroom]);
+
+        $this->authorize('create' ,[Classwork::class , $classroom]);
+        
         $type = $this->gettype($request);
 
         $request->validate([
@@ -93,6 +119,8 @@ class ClassworkController extends Controller
         ]);
 
         try{
+
+            // strip_tags('<h1></h1>');
             DB::transaction(function() use($classroom , $request){
                 
                 //there are two actions related to each other insert classwork and students 
@@ -100,6 +128,12 @@ class ClassworkController extends Controller
                 // Classwork::create($request->all());
     
                 $classwork->users()->attach($request->input('students'));
+            
+                event(new ClassworkCreated($classwork));
+
+                // ClassworkCreated::dispatch($classwork);
+
+                
             });
         }catch(QueryException $e){
             return back()->with('error' , $e->getMessage());
@@ -108,7 +142,7 @@ class ClassworkController extends Controller
        
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
-                         ->with('success' , 'Classwork Created!');
+                         ->with('success' , __('Classwork Created!'));
     }
 
     /**
@@ -116,11 +150,18 @@ class ClassworkController extends Controller
      */
     public function show(Classroom $classroom , Classwork $classwork)
     {
+
+        // Gate::authorize('classworks.view' , [$classwork]);
+        $this->authorize('view' , $classwork);
+
+        $submissions = Auth::user()->submissions()->where('classwork_id' , $classwork->id)->get();
+        
         $classwork->load('comments.user');
 
         return view('classworks.show' ,[
             'classroom' => $classroom,
             'classwork' => $classwork,
+            'submissions' => $submissions
         ]);
     }
 
@@ -129,6 +170,8 @@ class ClassworkController extends Controller
      */
     public function edit(Request $request ,Classroom $classroom , Classwork $classwork)
     {
+        $this->authorize('update' , $classwork);
+
         $type = $classwork->type->value;
 
         $assigned = $classwork->users()->pluck('id')->toArray();
@@ -138,7 +181,6 @@ class ClassworkController extends Controller
             'classwork' => $classwork,
             'assigned' => $assigned,
             'type' => $type,
-            
         ]);
     }
 
@@ -147,6 +189,8 @@ class ClassworkController extends Controller
      */
     public function update(Request $request,Classroom $classroom , Classwork $classwork)
     {
+        $this->authorize('update' , $classwork);
+
         $type = $classwork->type;
 
         $request->validate([
@@ -163,7 +207,7 @@ class ClassworkController extends Controller
         $classwork->users()->sync($request->input('students'));
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
-                         ->with('success' , 'Classwork Updated!');
+                         ->with('success' , __('Classwork Updated!'));
 
         // $request->validate([
         //     'title' => ['required' , 'string' , 'max:255'],
@@ -190,9 +234,11 @@ class ClassworkController extends Controller
      */
     public function destroy(Classroom $classroom , Classwork $classwork)
     {
+        $this->authorize('delete' , $classwork);
+
         $classwork->delete();
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
-                         ->with('success' , 'Classwork Deleted!');
+                         ->with('success' , __('Classwork Deleted!'));
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Requests\ClassroomRequest;
 use App\Models\Classroom;
 use App\Models\Post;
 use App\Models\Scopes\UserClassroomScope;
+use App\Models\Stream;
 use App\Models\Topic;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -32,6 +33,7 @@ class ClassroomsController extends Controller
         $classrooms = Classroom::Active()->recent()->orderBy('created_at' , 'DESC')->get();
 
         $success = session('success');
+
         return view('classrooms.index' , compact('classrooms' , 'success'));
     }
 
@@ -81,8 +83,7 @@ class ClassroomsController extends Controller
         } 
 
         return redirect()->route('classrooms.index')
-                         ->with('success' , 'Classroom Created')
-                         ->with('error' , 'error in create' );
+                         ->with('success' , 'Classroom Created');
     }
 
     /**
@@ -92,6 +93,7 @@ class ClassroomsController extends Controller
     {
         $classroom = Classroom::withTrashed()->findOrFail($id);
         $topics = Topic::where('classroom_id', '=', $classroom->id)->get();
+        $streams = Stream::where('classroom_id' , $classroom->id)->get();
 
         if(!$classroom)
         {
@@ -107,6 +109,7 @@ class ClassroomsController extends Controller
             'classroom' => $classroom,
             'topics' => $topics,
             'invitation_link' => $invitation_link,
+            'streams' => $streams,
         ]);
     }
 
@@ -148,7 +151,7 @@ class ClassroomsController extends Controller
             Classroom::deleteCoverImage($old);
         }
     
-        return redirect()->route('classrooms.index')->with('success' , 'Classroom Updated')->with('error' , 'error in update' );
+        return redirect()->route('classrooms.index')->with('success' , 'Classroom Updated');
     }
 
     /**
@@ -158,7 +161,7 @@ class ClassroomsController extends Controller
     {
         $classroom->delete();
 
-        return redirect(route('classrooms.index'))->with('success' , 'Classroom Deleted')->with('error' , 'error in delete' );
+        return redirect(route('classrooms.index'))->with('success' , 'Classroom Deleted');
     }
 
     public function trashed()
@@ -171,7 +174,7 @@ class ClassroomsController extends Controller
     {
         $classroom = Classroom::onlyTrashed()->findOrFail($id);
         $classroom->restore(); 
-        return redirect()->route('classrooms.index')->with('success' , "classroom ({$classroom->name}) restored")->with('error' , 'error in restore' );  
+        return redirect()->route('classrooms.index')->with('success' , "classroom ({$classroom->name}) restored");  
     }
     
     public function forceDelete($id)
@@ -180,6 +183,6 @@ class ClassroomsController extends Controller
         $classroom->forceDelete();
         // Classroom::deleteCoverImage($classroom->cover_image_path);
 
-        return redirect()->route('classrooms.index')->with('success' , "classroom ({$classroom->name}) deleted forever!")->with('error' , 'error in delete forever' );
+        return redirect()->route('classrooms.index')->with('success' , "classroom ({$classroom->name}) deleted forever!");
     }
 }

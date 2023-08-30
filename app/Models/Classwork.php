@@ -7,15 +7,15 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use PhpParser\Node\Stmt\Static_;
+
 
 class Classwork extends Model
 {
     use HasFactory;
 
-    const TYPE_ASSIGNMENT = ClassworkType::ASSIGNMENT;
-    const TYPE_MATERIAL = ClassworkType::MATERIAL;
-    const TYPE_QUESTION= ClassworkType::QUESTION;
+    const TYPE_ASSIGNMENT = ClassworkType::ASSIGNMENT->value;
+    const TYPE_MATERIAL = ClassworkType::MATERIAL->value;
+    const TYPE_QUESTION= ClassworkType::QUESTION->value;
 
     const STATUS_PUBLISHED = 'published';
     const STATUS_DRAFT = 'draft';
@@ -80,5 +80,14 @@ class Classwork extends Model
     public function comments()
     {
         return $this->morphMany(Comment::class , 'commentable')->latest();
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

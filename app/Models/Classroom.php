@@ -92,6 +92,10 @@ class Classroom extends Model
         return $this->users()->wherePivot('role' ,'=' , 'student'); 
     }
 
+    public function stream(){
+        return $this->hasMany(Stream::class)->latest();
+    }
+
     public function posts()
     {
         return $this->hasMany(Post::class);

@@ -4,13 +4,15 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail , HasLocalePreference
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -90,5 +92,25 @@ class User extends Authenticatable
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class);
+    }
+    public function profile()
+    {
+        return $this->hasOne(Profile::class , 'user_id' , 'id')->withDefault(); // with hasOne and belongsTo
+    }
+    // public function routeNotificationForMail($notification = null)
+    // {
+    //     return $this->email;
+    // }
+    // public function receiveBroadcastNotificationsOn()
+    // {
+    //     return 'Notifications.' . $this->id;
+    // }
+    public function preferredLocale()
+    {
+        return $this->profile->locale;
     }
 }

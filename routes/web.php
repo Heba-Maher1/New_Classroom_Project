@@ -5,8 +5,10 @@ use App\Http\Controllers\ClassroomsController;
 use App\Http\Controllers\ClassworkController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\JoinClassroomController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\TopicsController;
 use App\Models\Classwork;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +87,15 @@ Route::middleware(['auth'])->group(function(){
     Route::post('posts/{classroom}' , [PostController::class , 'store'])->name('posts.store');
     Route::delete('posts/{classroom}' , [PostController::class , 'destroy'])->name('posts.destroy');
     Route::post('posts/{post}/comments', [PostController::class , 'store'])->name('posts.comments.store');
+    
+    Route::post('classwork/{classwork}/submissions', [SubmissionController::class , 'store'])
+    ->name('submissions.store');
+    // ->middleware('can:create,App\Models\Classwork');
+
+    Route::get('submissions/{submission}/file', [SubmissionController::class , 'file'])->name('submissions.file');
+
+    Route::get('lang/{locale}', [LanguageController::class , 'changeLanguage'])->name('lang.switch');
+
 
 
 });

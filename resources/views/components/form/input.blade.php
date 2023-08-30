@@ -2,6 +2,7 @@
     'type' => 'text' ,  
     'name' ,
     'value' => '' ,
+    'id'
     
 ])
 
