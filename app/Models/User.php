@@ -60,6 +60,26 @@ class User extends Authenticatable implements MustVerifyEmail , HasLocalePrefere
         );
     }
 
+    public function routeNotificationForMail($notification = null)
+    {
+
+        return $this->email;
+
+    }
+
+    public function routeNotificationForVonage($notification = null)
+    {
+
+        return '+972598898555';
+    
+    }
+
+    public function routeNotificationForHadara($notification = null)
+    {
+
+        return '+972598898555';
+    
+    }
     public function classrooms()
     {
         return $this->belongsToMany(

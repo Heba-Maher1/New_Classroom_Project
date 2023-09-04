@@ -21,11 +21,18 @@ class ClassroomRequest extends FormRequest
      */
     public function rules(): array
     {
+
+        $id = $this->route('classroom' , 0);
+
         return [
-            'name' => 'required|string|max:255|',
+            'name' => ['required' , 'string' , 'max:255' , function($attributes , $value , $fail){
+                if($value == 'admin'){
+                    return $fail('This :attribute value is forbidden!');
+                }
+            }],
                 'section' => 'nullable|string|max:255',
                 'subject' => 'nullable|string|max:255',
-                'room' => 'nullable|string|max:255',
+                'room' => "nullable|string|max:255|unique:classrooms,room,$id",
                 'cover_image' => [
                     'nullable',
                     'image',

@@ -1,6 +1,6 @@
 <x-main-layout :title="$classroom->name">
   <x-navbar :area="route('classrooms.show', $classroom->id)" :ass="route('classrooms.classworks.index', $classroom->id)" :people="route('classrooms.people', $classroom->id)" />
-  <div class="container mt-4">
+  <div class="container my-4">
 
       <x-alert name="success" class="alert-success" />
       <x-alert name="error" class="alert-danger" />
@@ -42,10 +42,10 @@
 
       
 
-    {{-- @forelse($classworks as $group) --}}
-    {{-- <h3 class="mt-4 text-success">{{ $group->first()->topic->name }}</h3> --}}
+    @forelse($classworks as $group)
+    <h3 class="mt-4 text-success">{{ $group->first()->topic->name}}</h3>
     <div class="accordion accordion-flush" id="accordionFlushxample">
-        @foreach($classworks as $classwork)
+        @foreach($group as $classwork)
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{$classwork->id}}" aria-expanded="false" aria-controls="flush-collapseThree">
@@ -54,25 +54,45 @@
             </h2>
             <div id="flush-collapse{{$classwork->id}}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                 <div class="accordion-body text-secondary d-flex justify-content-between">
-                    {{-- <h6>{!! $classwork->description !!}</h6> --}}
-                    <div class="buttons d-flex">
-                        <a href="{{ route('classrooms.classworks.edit', [$classroom->id, $classwork->id]) }}" class="btn btn-secondary me-2"><i class="fa-solid fa-pen"></i></a>
-                        <a href="{{ route('classrooms.classworks.show', [$classroom->id, $classwork->id]) }}" class="btn btn-primary me-2"><i class="fa-solid fa-eye"></i></a>
-                        <form action="{{ route('classrooms.classworks.destroy', [$classroom->id, $classwork->id]) }}" method="post">
-                            @csrf
-                            @method('delete')
-                            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
-                        </form>
+                    <div class="row">
+                      <div class="col-md-6">
+                         <h6>{!! $classwork->description !!}</h6>
+                      </div>
+                      <div class="col-md-6 row">
+                        <div class="col-md-3 text-center">
+                          <div class="fs-3"> {{$classwork->users_count}}</div>
+                          <div class="text-muted"> {{ __('Assigned')}}</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                          <div class="fs-3"> {{$classwork->turnedin_count}}</div>
+                          <div class="text-muted"> {{ __('Turned-in')}}</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                          <div class="fs-3"> {{$classwork->created_count}}</div>
+                          <div class="text-muted"> {{ __('Created')}}</div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="buttons d-flex">
+                            <a href="{{ route('classrooms.classworks.edit', [$classroom->id, $classwork->id]) }}" class="btn btn-secondary mx-2"><i class="fa-solid fa-pen"></i></a>
+                            <a href="{{ route('classrooms.classworks.show', [$classroom->id, $classwork->id]) }}" class="btn btn-primary mx-2"><i class="fa-solid fa-eye"></i></a>
+                            <form action="{{ route('classrooms.classworks.destroy', [$classroom->id, $classwork->id]) }}" class="mx-2" method="post">
+                                @csrf
+                                @method('delete')
+                                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                          </div>
+                        </div>  
                     </div>
+                    
                 </div>
             </div>
         </div>
         @endforeach
 
     </div>
-    {{-- @empty
+    @empty
     <p class="text-center fs-4 text-success">No Classworks Found.</p>
-    @endforelse --}}
+    @endforelse
     {{-- {{ $classworks->links() }} --}}
 
   </div>

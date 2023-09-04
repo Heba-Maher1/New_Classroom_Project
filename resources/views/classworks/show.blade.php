@@ -9,7 +9,8 @@
                 <div class="header d-flex">
                     <div class="content w-100">
                         <h2><span class="text-success">{{$classwork->type}}</span> / <span class="fs-4">{{$classwork->title}}</span> </h2>
-                        <p class="text-secondary">{{auth()->user()->name}} &#8226; {{$classwork->submitted_at}}</p>
+                        <p class="text-secondary">{{auth()->user()->name}} &#8226; {{$classwork->updated_at->format('d M')}} (Time of last modification: )</p>
+                        @if ($classwork->type == 'assignment')<p style="font-weight:bold">{{$classwork->options['grade']}} mark</p>@endif
                         <hr class="text-success">
                         <p class="description">{!! $classwork->description !!}</p>
                         <hr class="text-success">

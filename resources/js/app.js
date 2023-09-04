@@ -10,10 +10,9 @@ if(classroomId){
     .listen('.classwork-created' , function(event){ // when customize the name of the event we must add . before the name of the evenet
         alert(event.title);
     });
-
 }
 
 Echo.private('Notifications.' + userId)
-.notification(function(event){
-    alert(event.body);
-})
+    .notification(function(event){
+        alert(event.body);
+    });

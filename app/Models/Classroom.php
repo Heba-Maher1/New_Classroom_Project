@@ -27,6 +27,14 @@ class Classroom extends Model
         'name' , 'code' ,'section' , 'subject' , 'room' , 'cover_image_path' , 'theme' , 'user_id' ,
     ];
 
+    protected $appends = [
+        'cover_image_url'
+    ];
+    protected $hidden = [
+        'cover_image_path','deleted_at'
+        // 'name'
+    ]; // doesnt return in json data we use it if there is any sensitive information like password
+
     protected static function booted()
     {
 
@@ -66,6 +74,12 @@ class Classroom extends Model
     public function topics(): HasMany
     {
         return $this->hasMany(Topic::class , 'classroom_id' , 'id');
+    }
+
+    public function user(){
+
+        return $this->belongsTo(User::class);
+
     }
     public function users(): BelongsToMany
     {
@@ -171,13 +185,13 @@ class Classroom extends Model
     }
 
 //2- example of non existing attribute
-    // public function getCoverImageUrlAttribute()
-    // {
-    //     if($this->cover_image_path){
-    //         return Storage::disk('public')->url($this->cover_image_path);
-    //     }
-    //     return 'https://placehold.co/800x300';
-    // }
+    public function getCoverImageUrlAttribute()
+    {
+        if($this->cover_image_path){
+            return Storage::disk('public')->url($this->cover_image_path);
+        }
+        return 'https://placehold.co/800x300';
+    }
 
     public function getUrlAttribute()
     {

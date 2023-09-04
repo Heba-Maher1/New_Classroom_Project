@@ -136,7 +136,7 @@
 
 <script>
     var classroomId;
-    const userId = "{{ Auth::id() }}"
+    const userId = "{{ Auth::id() }}";
 </script> 
 
 @stack('scripts')

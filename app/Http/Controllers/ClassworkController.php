@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ClassworkCreated;
+use App\Events\classworkUpdated;
 use App\Models\Classroom;
 use App\Models\Classwork;
 use App\Models\Topic;
@@ -27,35 +28,46 @@ class ClassworkController extends Controller
      }
      
 
-    public function index(Request $request ,Classroom $classroom)
+    public function index(Request $request ,Classroom $classroom , Classwork $classwork)
     {
 
         $this->authorize('viewAny' , [Classwork::class , $classroom]);
        
         $classworks = $classroom->classworks()
                 ->with('topic') // Eager Load
+                ->withCount([
+                    'users',
+                    'users as turnedin_count' => function($query){
+                        $query->where('classwork_user.status','=','submitted');
+                    },
+                    'users as created_count' => function($query){
+                        $query->whereNotNull('classwork_user.grade');
+                    },
+                ])
+                ->withCount('users')
                 ->filter($request->query())
                 ->latest('published_at')
-                // ->where(function($query){
-                //     $query->whereHas('users' , function($query){
-                //         $query->where('id' , '=' , Auth::id());
-                //     })
-                //     ->orWhere('classroom.teachers' , function($query){
-                //         $query->where('id' , '=' , Auth::id());
-                //     });
-                // })
                 ->where(function($query){
-                    $query->whereRaw('EXISTS (SELECT 1 FROM classwork_user WHERE classwork_user.classwork_id = classworks.id AND classwork_user.user_id = ? )', [Auth::id()]);
-                    $query->orWhereRaw('EXISTS (SELECT 1 FROM classroom_user WHERE classroom_user.classroom_id = classworks.classroom_id AND classroom_user.user_id = ? AND classroom_user.role = ?)' , [Auth::id() , 'teacher']);
+                    $query->whereHas('users' , function($query){
+                        $query->where('id' , '=' , Auth::id());
+                    })
+                    ->orWhereHas('classroom.teacher' , function($query){
+                        $query->where('id' , '=' , Auth::id());
+                    });
                 })
-                ->paginate(5);
+                // ->where(function($query){
+                //     $query->whereRaw('EXISTS (SELECT 1 FROM classwork_user WHERE classwork_user.classwork_id = classworks.id AND classwork_user.user_id = ? )', [Auth::id()]);
+                //     $query->orWhereRaw('EXISTS (SELECT 1 FROM classroom_user WHERE classroom_user.classroom_id = classworks.classroom_id AND classroom_user.user_id = ? AND classroom_user.role = ?)' , [Auth::id() , 'teacher']);
+                // })
+                ->paginate(50);
 
 
 
         return view('classworks.index' , [
             'classroom' => $classroom,
-            'classworks' => $classworks/*->groupBy('topic_id')*/,
+            'classworks' => $classworks->groupBy('topic_id'),
             'topics' => Topic::all(),
+            'classwork' => $classwork,
             'success' => session('success'),
         ]);
 
@@ -205,6 +217,8 @@ class ClassworkController extends Controller
         $classwork->update($request->all());
 
         $classwork->users()->sync($request->input('students'));
+
+        event(new classworkUpdated($classwork));
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
                          ->with('success' , __('Classwork Updated!'));

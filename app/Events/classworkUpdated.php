@@ -11,19 +11,16 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ClassworkCreated
+class classworkUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-
-     // there are three types of channel  public , [presisnce , private] => must be authenticated user
-
     public function __construct(public Classwork $classwork)
     {
-        
+        //
     }
 
     /**
@@ -34,24 +31,7 @@ class ClassworkCreated
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('classroom.' . $this->classwork->classroom_id),
-            
-        ];
-    }
-
-    public function broadcastAs()
-    {
-        return 'classwork-created';
-
-    }
-
-    public function broadcastWith()
-    {
-        return [
-            'id' => $this->classwork->id,
-            'title' => $this->classwork->title,
-            'user' => $this->classwork->user,
-            'classroom' => $this->classwork->classroom,
+            new PrivateChannel('channel-name'),
         ];
     }
 }

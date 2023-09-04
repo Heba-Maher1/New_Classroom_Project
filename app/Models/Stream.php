@@ -12,9 +12,9 @@ class Stream extends Model
 {
     use HasFactory , HasUuids;
 
-    public $incrementing = false ;
+    public $incrementing = false ; // stop using auto increment for id beacause we make if uuid
 
-    protected $keyType = 'string' ;
+    protected $keyType = 'string' ; // instead of integer of id we turned it to string
 
     protected $fillable = [
          'classroom_id' , 'user_id' , 'content' ,'link'

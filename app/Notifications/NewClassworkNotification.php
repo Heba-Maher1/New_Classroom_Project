@@ -3,12 +3,14 @@
 namespace App\Notifications;
 
 use App\Models\Classwork;
+use App\Notifications\Channels\HadaraSmsChannel;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\VonageMessage;
 use Illuminate\Notifications\Notification;
 
 class NewClassworkNotification extends Notification
@@ -30,7 +32,7 @@ class NewClassworkNotification extends Notification
      */
     public function via(object $notifiable): array // the model to recieve notification 
     {
-        $via = ['database' , 'mail' , 'broadcast'];
+        $via = ['database', HadaraSmsChannel::class , 'broadcast' , 'mail' , HadaraSmsChannel::class];
         // the $notifiable used for example to call dynamic channels depend on the notification type , like this example 
 
         // if($notifiable->recieve_mail){
@@ -47,6 +49,9 @@ class NewClassworkNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+
+        // return new MailMessage($this->createMessage());
+        
         $classwork = $this->classwork;
 
         $content =__(':name posted a new :type: :title' , [
@@ -69,7 +74,22 @@ class NewClassworkNotification extends Notification
 
     public function toDatabase(object $notifiable): DatabaseMessage
     {        
+
         return new DatabaseMessage($this->createMessage());
+
+    }
+    public function toHadara(object $notifiable)
+    {        
+
+        return 'New classwork created';
+
+    }
+
+    public function toVonage(object $notifiable): VonageMessage
+    {        
+
+        return (new VonageMessage)
+                ->content('A new claswork created');
 
     }
 
@@ -77,6 +97,7 @@ class NewClassworkNotification extends Notification
     {
         
         return new BroadcastMessage($this->createMessage());
+
     }
 
     protected function createMessage(): array

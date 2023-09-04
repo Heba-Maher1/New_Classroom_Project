@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Events\ClassworkCreated;
+use App\Events\classworkUpdated;
 use App\Listeners\PostInClassroomStream;
+use App\Listeners\SendClassworkUpdatedNotificationToAssignedStudent;
 use App\Listeners\SendNotificationToAssignedStudents;
 use App\Models\Classroom;
 use App\Observers\ClassroomObserver;
@@ -26,6 +28,9 @@ class EventServiceProvider extends ServiceProvider
         ClassworkCreated::class => [
             PostInClassroomStream::class,
             SendNotificationToAssignedStudents::class,
+        ],
+        classworkUpdated::class => [
+            SendClassworkUpdatedNotificationToAssignedStudent::class,
         ]
     ];
 
@@ -40,7 +45,11 @@ class EventServiceProvider extends ServiceProvider
     {
         // Classroom::observe(ClassroomObserver::class);
 
-        // Event::listen('classwork.created' ,[new PostInClassroomStream , 'handle']);
+        // Event::listen('classwork.created' //the event ,[new PostInClassroomStream , 'handle'] // the listener with its handle method that conatin the logic); if i have many listeners to this event , repeat this statment count of listeners
+
+        // Event::listen('classwork.created' , function($classroom , $classwork){
+        //     // the logic
+        // });
     }
 
     /**
