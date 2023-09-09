@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ClassroomCollection;
 use App\Http\Resources\ClassroomResource;
 use App\Models\Classroom;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\Rule;
 use Throwable;
@@ -18,6 +20,10 @@ class ClassroomsController extends Controller
      */
     public function index()
     {
+        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.read')){
+            abort(403);
+        }
+
          // return the data of classroom with the data of user relationship and topics relationship
         // return Classroom::with('user:id,name' , 'topics')->withCount('students')->get(); // return the data of classroom with the data of user relationship and topics relationship
         // return Classroom::all();
@@ -34,6 +40,11 @@ class ClassroomsController extends Controller
      */
     public function store(Request $request)
     {
+
+        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.create')){
+            abort(403);
+        }
+
         $request->validate([
             'name' => ['required']
         ]);
@@ -52,6 +63,11 @@ class ClassroomsController extends Controller
      */
     public function show(Classroom $classroom)
     {
+
+        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.read')){
+            abort(403);
+        }
+
         return new ClassroomResource($classroom->load('user')->loadCount('students'));
     }
 
@@ -60,6 +76,11 @@ class ClassroomsController extends Controller
      */
     public function update(Request $request, Classroom $classroom)
     {
+
+        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.update')){
+            abort(403);
+        }
+
         $request->validate([
             'name' => ['sometimes' ,'required' , Rule::unique('classrooms' , 'name')->ignore($classroom->id)],
             'section' => ['sometimes']
@@ -79,6 +100,11 @@ class ClassroomsController extends Controller
      */
     public function destroy(string $id)
     {
+
+        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.delete')){
+            abort(403 , 'You Cannot delete this classroom');
+        }
+
         Classroom::destroy($id);
 
         return Response::json([] , 204);

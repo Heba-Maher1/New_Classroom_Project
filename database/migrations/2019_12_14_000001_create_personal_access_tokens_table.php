@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('personal_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->morphs('tokenable');
-            $table->string('name');
+            $table->string('name'); // store the device name (windows)
             $table->string('token', 64)->unique();
-            $table->text('abilities')->nullable();
+            $table->text('abilities')->nullable();// tokens authorization , we need it when we use third-party like login with google or facebook
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();

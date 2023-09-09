@@ -6,9 +6,12 @@ use App\Http\Controllers\ClassworkController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\JoinClassroomController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\PlansController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\SubscriptionsController;
 use App\Http\Controllers\TopicsController;
 use App\Models\Classwork;
 use Illuminate\Support\Facades\Route;
@@ -41,8 +44,20 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+Route::get('plans' , [PlansController::class , 'index'])->name('plans');
+
 Route::middleware(['auth'])->group(function(){
 
+    Route::get('subscription/{subscription}/pay' , [PaymentsController::class , 'create'])->name('checkout');
+
+
+    Route::post('subscriptions' , [SubscriptionsController::class , 'store'])->name('subscriptions.store');
+
+    Route::post('payments' , [PaymentsController::class , 'store'])->name('payments.store');
+
+    Route::get('/payments/success' , [PaymentsController::class , 'success'])->name('payments.success');
+    Route::get('/payments/cancel' , [PaymentsController::class , 'cancle'])->name('payments.cancle');
+    
     Route::prefix('/classrooms/trashed')
     ->as('classrooms.')
     ->controller(ClassroomsController::class)

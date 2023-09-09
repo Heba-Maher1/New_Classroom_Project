@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\Http;
 
 class ClassworkController extends Controller
 {
@@ -150,8 +151,6 @@ class ClassworkController extends Controller
         }catch(QueryException $e){
             return back()->with('error' , $e->getMessage());
         }
-
-       
 
         return redirect()->route('classrooms.classworks.index' , $classroom->id)
                          ->with('success' , __('Classwork Created!'));

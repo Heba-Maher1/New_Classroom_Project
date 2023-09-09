@@ -17,8 +17,8 @@ class ClassroomCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
 
-        foreach($this->collection as $model){
-            $data[] = [
+        $data = $this->collection->map(function($model){
+            return [
                 'id' => $model->id,
                 'name' => $model->name,
                 'code' => $model->code,
@@ -34,9 +34,8 @@ class ClassroomCollection extends ResourceCollection
                     'name' => $model->user?->name,
                 ],
             ];
+        });
 
-        }
-        
         return [
             'data' => $data,
             'links' => [

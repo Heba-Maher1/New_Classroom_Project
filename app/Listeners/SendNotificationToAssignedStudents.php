@@ -30,6 +30,6 @@ class SendNotificationToAssignedStudents
         
         // instead of using foreach , we use Notification facade class that take two argument , the users that we want to sebd notif , and the notification class
 
-        Notification::send($event->classwork->users, new NewClassworkNotification($event->classwork));
+        // Notification::send($event->classwork->users, new NewClassworkNotification($event->classwork));
     }
 }

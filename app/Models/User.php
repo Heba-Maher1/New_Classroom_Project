@@ -121,6 +121,10 @@ class User extends Authenticatable implements MustVerifyEmail , HasLocalePrefere
     {
         return $this->hasOne(Profile::class , 'user_id' , 'id')->withDefault(); // with hasOne and belongsTo
     }
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class); 
+    }
     // public function routeNotificationForMail($notification = null)
     // {
     //     return $this->email;

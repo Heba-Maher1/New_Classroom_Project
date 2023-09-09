@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\Http;
 
 class HadaraSmsChannel
 {
-    public function send(object $notifiable ,Notification $notification ): void
-    {
+    // public function send(object $notifiable ,Notification $notification ): void
+    // {
 
-        $service = new HadaraSms(config('services.hadara.key'));
+    //     $service = new HadaraSms(config('services.hadara.key'));
 
-        $service->send(
-            $notifiable->routeNotificationForHadara($notification),
-            $notification->toHadara($notifiable),
-        );
-    }
+    //     $service->send(
+    //         $notifiable->routeNotificationForHadara($notification),
+    //         $notification->toHadara($notifiable),
+    //     );
+    // }
 }

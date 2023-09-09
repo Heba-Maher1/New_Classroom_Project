@@ -1,7 +1,7 @@
 <x-main-layout title="Create Topics">
     <div class="container mt-5">
         <h1>Create Topic</h1>
-        <form action="{{ route('topics.store' , $classroom ) }}" method="POST">
+        <form action="{{ route('topics.store' , $classroom) }}" method="POST">
             @csrf
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" id="classname" placeholder="Topic  Name" name="name">
