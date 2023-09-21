@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\ClassworkCreated;
+use App\Jobs\SendClassroomNotification;
 use App\Models\User;
 use App\Notifications\NewClassworkNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,12 +25,9 @@ class SendNotificationToAssignedStudents
      */
     public function handle(ClassworkCreated $event): void
     {
-        // foreach($event->Classwork->users as $user){
-        //   $user->notify(new NewClassworkNotification($event->classwork));  
-        // }
-        
-        // instead of using foreach , we use Notification facade class that take two argument , the users that we want to sebd notif , and the notification class
 
-        // Notification::send($event->classwork->users, new NewClassworkNotification($event->classwork));
+        $classwork = $event->classwork;
+
+        dispatch(new SendClassroomNotification($classwork->users, new NewClassworkNotification($classwork)));
     }
 }

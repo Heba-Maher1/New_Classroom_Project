@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 
 class PlansController extends Controller
 {
-    
-    public function index(){
+
+    public function index()
+    {
         $plans = Plan::all();
 
-        return view('plans' , compact('plans'));
+        return view('plans', compact('plans'));
     }
 }

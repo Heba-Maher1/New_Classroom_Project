@@ -22,7 +22,8 @@ return new class extends Migration
                     ->constrained()
                     ->nullOnDelete();
             $table->timestamp('expires_at'); 
-            $table->unsignedSmallInteger('price')->default(0);       
+            $table->unsignedSmallInteger('price')->default(0);     
+            $table->enum('status' , ['pending' , 'active' , 'expired']);  
             $table->timestamps();
         });
     }

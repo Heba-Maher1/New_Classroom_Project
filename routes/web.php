@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\TwoFactorAuthenticationController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ClassroomPeopleController;
 use App\Http\Controllers\ClassroomsController;
 use App\Http\Controllers\ClassworkController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SubscriptionsController;
 use App\Http\Controllers\TopicsController;
+use App\Http\Controllers\Webhooks\StripeController;
 use App\Models\Classwork;
 use Illuminate\Support\Facades\Route;
 
@@ -27,9 +30,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [AuthenticatedSessionController::class , 'create']);
+
+Route::get('/admin/2fa' , [TwoFactorAuthenticationController::class , 'create']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -42,7 +45,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-require __DIR__.'/auth.php';
+// require __DIR__.'/auth.php';
 
 Route::get('plans' , [PlansController::class , 'index'])->name('plans');
 
@@ -53,10 +56,10 @@ Route::middleware(['auth'])->group(function(){
 
     Route::post('subscriptions' , [SubscriptionsController::class , 'store'])->name('subscriptions.store');
 
-    Route::post('payments' , [PaymentsController::class , 'store'])->name('payments.store');
+    Route::post('payments/{subscription}' , [PaymentsController::class , 'store'])->name('payments.store');
 
-    Route::get('/payments/success' , [PaymentsController::class , 'success'])->name('payments.success');
-    Route::get('/payments/cancel' , [PaymentsController::class , 'cancle'])->name('payments.cancle');
+    Route::get('/payments/{subscription}/success' , [PaymentsController::class , 'success'])->name('payments.success');
+    Route::get('/payments/{subscription}/cancel' , [PaymentsController::class , 'cancle'])->name('payments.cancle');
     
     Route::prefix('/classrooms/trashed')
     ->as('classrooms.')
@@ -90,9 +93,12 @@ Route::middleware(['auth'])->group(function(){
     Route::put('/topics/{id}' , [TopicsController::class ,'update'])->name('topics.update')->where(['id' => '\d+']);
     Route::delete('/topics/{id}' , [TopicsController::class ,'destroy'])->name('topics.destroy')->where(['id' => '\d+']);
     
+    Route::get('classrooms/{classroom}/chat', [ClassroomsController::class, 'chat'])->name('classrooms.chat');
+
     Route::resource('/classrooms' , ClassroomsController::class);
 
     Route::resource('classrooms.classworks' , ClassworkController::class);
+
 
     Route::get('/classrooms/{classroom}/people' , [ClassroomPeopleController::class , 'index'])->name('classrooms.people');
     Route::delete('/classrooms/{classroom}/people' , [ClassroomPeopleController::class , 'destroy'])->name('classrooms.people.destroy');
@@ -111,7 +117,6 @@ Route::middleware(['auth'])->group(function(){
 
     Route::get('lang/{locale}', [LanguageController::class , 'changeLanguage'])->name('lang.switch');
 
-
-
 });
 
+Route::post('/payments/stripe/webhook' , StripeController::class);

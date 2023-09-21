@@ -1,5 +1,7 @@
 
-<li class="nav-item dropdown me-2">
+<li class="nav-item sidebar-item  dropdown d-flex align-items-center me-2">
+    <i class="fa-solid fa-bell main-color me-3"></i>
+
     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Notifications ({{ $unreadCount }})
     </a>

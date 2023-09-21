@@ -1,0 +1,43 @@
+* {
+  box-sizing: border-box;
+}
+
+
+body {
+  font-family: Arial, Helvetica, sans-serif; /* Choose your preferred font stack */
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+.main-color{
+  color: #00736c;
+}
+.list-group{
+  top: 77px;
+  right: 56px;
+  display: none;
+}
+.add:hover.list-group{
+  display: block;
+}
+.bg-green{
+  text:#fff;
+  background-color: #00736c;
+}
+.bg-green:hover{
+  background-color: #009288;
+}
+.sidebar-item:hover {
+  background-color: #eeeeee;
+  border-radius: 5px;
+}
+.classroom-card:hover {
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2); 
+  transform: translateY(5px); 
+  transition: 0.1s;
+}
+.list-group-item:hover{
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2); 
+  transform: translateY(-3px); 
+  transition: 0.1s;
+}

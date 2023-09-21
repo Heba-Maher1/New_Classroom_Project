@@ -7,7 +7,7 @@
                 <input type="text" class="form-control" id="classname" placeholder="Topic  Name" name="name">
                 <label for="classname">Topic Name</label>
             </div>
-            <input type="hidden" name="classroom_id" value="{{ $classroom }}">
+            <input type="hidden" name="classroom_id" value="{{ $classroom->id }}">
             <button type="submit" class="btn btn-success">Create Topic</button>
         </form>
     </div>

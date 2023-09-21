@@ -84,20 +84,18 @@ class Classroom extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(
-            User::class ,       //Related model
-            'classroom_user',   //pivot table
-            'classroom_id' ,    //fk for current model in the pivot
-            'user_id' ,         // fk for related model 
-            'id' ,              // pk for current model
-            'id',               //pk for related model
+            User::class ,       
+            'classroom_user', 
+            'classroom_id' , 
+            'user_id' ,  
+            'id' ,   
+            'id', 
         )->withPivot(['role' , 'created_at']);
-        // ->wherePivot('role' , '=', 'teacher')
-        // ->as('join'); 
+
     }
 
     public function teacher()
     {
-        // return $this->users; //=>collection of users
         return $this->users()->wherePivot('role' ,'=' , 'teacher'); 
     }
 
@@ -108,6 +106,11 @@ class Classroom extends Model
 
     public function stream(){
         return $this->hasMany(Stream::class)->latest();
+    }
+
+    public function messages()
+    {
+        return $this->morphMany(Message::class , 'recipient');
     }
 
     public function posts()
@@ -167,24 +170,15 @@ class Classroom extends Model
         $this->users()->attach($user_id ,[
             'role' => $role,
             'created_at' => now(),
-        ]); //insert in the pivot table
+        ]);
 
-        // without relation , we insert directly to the pivot table
-        // return DB::table('classroom_user')->insert([
-        //     'classroom_id' => $this->id,
-        //     'user_id' => $user_id,
-        //     'role' => $role ,
-        //     'created_at' => now(), // object of time class , return the current time
-        // ]);
     }
-//1- example of an existing attribute
-    // get{attribute name}Attribute
+
     public function getNameAttribute($value)
     {
         return strtoupper($value);
     }
 
-//2- example of non existing attribute
     public function getCoverImageUrlAttribute()
     {
         if($this->cover_image_path){
@@ -198,7 +192,4 @@ class Classroom extends Model
         return route('classrooms.show' , $this->id);
     }
 
-    // Creating , Created / Updating , Updated / Saving , Saved => contain if create and update 
-    //Deleting , Deleted / Restoring , Restored / ForceDeleting , ForceDeleted
-    // Retrieved
 }

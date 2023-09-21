@@ -32,7 +32,7 @@ class NewClassworkNotification extends Notification
      */
     public function via(object $notifiable): array // the model to recieve notification 
     {
-        $via = ['database', HadaraSmsChannel::class , 'broadcast' , 'mail' , HadaraSmsChannel::class];
+        $via = ['database'/**,'broadcast' , 'mail' */];
         // the $notifiable used for example to call dynamic channels depend on the notification type , like this example 
 
         // if($notifiable->recieve_mail){
@@ -85,13 +85,13 @@ class NewClassworkNotification extends Notification
 
     }
 
-    public function toVonage(object $notifiable): VonageMessage
-    {        
+    // public function toVonage(object $notifiable): VonageMessage
+    // {        
 
-        return (new VonageMessage)
-                ->content('A new claswork created');
+    //     return (new VonageMessage)
+    //             ->content('A new claswork created');
 
-    }
+    // }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
     {

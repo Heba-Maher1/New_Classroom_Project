@@ -15,7 +15,7 @@ class PostController extends Controller
         return view('classrooms.show', compact('posts'));
     }
 
-    public function store(Request $request , Classroom $classroom)
+    public function store(Request $request, Classroom $classroom)
     {
         $request->validate([
             'content' => 'required|string|max:1024'
@@ -26,11 +26,10 @@ class PostController extends Controller
             'user_id' => auth()->user()->id,
             'content' => $request->input('content')
         ]);
-    
-        $post->save();
-    
-        return redirect()->back()->with('success', 'Post created successfully.');
 
+        $post->save();
+
+        return redirect()->back()->with('success', 'Post created successfully.');
     }
 
     public function destroy($id)
@@ -40,6 +39,5 @@ class PostController extends Controller
         $post->delete();
 
         return redirect()->back()->with('success', 'Post deleted successfully.');
-        
     }
 }

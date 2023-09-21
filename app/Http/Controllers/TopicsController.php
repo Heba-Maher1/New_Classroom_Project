@@ -1,92 +1,75 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ClassroomRequest;
 use App\Http\Requests\TopicRequest;
 use App\Models\Classroom;
 use App\Models\Topic;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-
+use Illuminate\Support\Facades\Auth;
 
 class TopicsController extends Controller
 {
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(int $classroom)
+    public function create(Classroom $classroom)
     {
-        return view('topics.create' , compact('classroom'));
+        $this->authorize('createTopic', $classroom);
+
+        return view('topics.create', compact('classroom'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(TopicRequest $request): RedirectResponse
     {
-                $topic = new Topic();
-                $topic->name = $request->post('name');
-                $topic->classroom_id = $request->post('classroom_id');
-                $topic->save();
 
-                return redirect()->route('classrooms.index');
+        $validatedData = $request->validated();
+
+        $validatedData['user_id'] = Auth::id();
+        
+        Topic::create($validatedData);
+
+        return redirect()->route('classrooms.index')->with('success', 'Topic Created');
     }
 
-
-    public function edit(string $id)
+    public function edit(Topic $topic)
     {
-        $topics = Topic::find($id);
-        if(!$topics)
-        {
-            abort(404);
-        }
-        return view('topics.update',[
-            'topic' => $topics,
-        ]);
+        return view('topics.update', compact('topic'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(TopicRequest $request, Topic $topic)
     {
-        $topics = Topic::find($id);
-        $topics->update($request->all());
+        $topic->update($request->validated());
 
-        return Redirect::route('classrooms.index')->with('success' , 'Topic Updated')->with('error' , 'error in update');
+        return redirect()->route('classrooms.index')->with('success', 'Topic Updated');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id )
+    public function destroy(Topic $topic)
     {
-        $topic = Topic::findOrFail($id);
-
         $topic->delete();
 
-        return redirect(route('classrooms.index'))->with('success' , 'Topic Deleted')->with('error' , 'error in delete');
-
+        return redirect(route('classrooms.index'))->with('success', 'Topic Deleted');
     }
 
     public function trashed()
     {
+
         $topics = Topic::onlyTrashed()->latest('deleted_at')->get();
-        return view('topics.trashed' , compact('topics'));
+
+        return view('topics.trashed', compact('topics'));
     }
 
-    public function restore($id )
+    public function restore($id)
     {
+
         $topic = Topic::onlyTrashed()->findOrFail($id);
-        $topic->restore(); 
-        return redirect()->route('classrooms.index')->with('success' , "topic ({$topic->name}) restored")->with('error' , 'error in restore'); 
+
+        $topic->restore();
+
+        return redirect()->route('classrooms.index')->with('success', "Topic ({$topic->name}) restored");
     }
 
-    public function forceDelete($id)
+    public function forceDelete(Topic $topic)
     {
-        $topic = Topic::withTrashed()->findOrFail($id);
         $topic->forceDelete();
 
-        return redirect()->route('classrooms.index')->with('success' , "tpoic ({$topic->name}) deleted forever!")->with('error' , 'error in delete forever');
+        return redirect()->route('classrooms.index')->with('success', "Topic ({$topic->name}) deleted forever!");
     }
 }

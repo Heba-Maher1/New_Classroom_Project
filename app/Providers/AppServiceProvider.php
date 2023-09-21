@@ -38,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
             'post' => Post::class,
             'classwork' => Classwork::class,
             'user' => User::class,
+            'classroom' => Classroom::class,
         ]);
     }
 }

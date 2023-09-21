@@ -47,11 +47,6 @@ class User extends Authenticatable implements MustVerifyEmail , HasLocalePrefere
         'password' => 'hashed',
     ];
 
-    // public function setEmailAttribute($value)
-    // {
-    //     $this->attributes['email'] = ucfirst(strtolower($value));
-    // }
-
     protected function email(): Attribute
     {
         return Attribute::make(
@@ -125,14 +120,18 @@ class User extends Authenticatable implements MustVerifyEmail , HasLocalePrefere
     {
         return $this->hasMany(Subscription::class); 
     }
-    // public function routeNotificationForMail($notification = null)
-    // {
-    //     return $this->email;
-    // }
-    // public function receiveBroadcastNotificationsOn()
-    // {
-    //     return 'Notifications.' . $this->id;
-    // }
+
+    // recipient meeages
+    public function receivedMessages()
+    {
+        return $this->morphMany(Message::class , 'recipient');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class , 'sender_id');
+    }
+
     public function preferredLocale()
     {
         return $this->profile->locale;

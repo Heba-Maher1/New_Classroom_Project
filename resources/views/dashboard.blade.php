@@ -4,14 +4,14 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     {{ __("You're logged in!") }}
-                </div>       
+                </div>
             </div>
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("Go to the classrooms?") }}  <a style="color:#54a154;" href="{{ route('classrooms.index')}}">{{ __("click here") }} </a>
-                </div>     
+                    {{ __('Go to the classrooms?') }} <a style="color:#54a154;"
+                        href="{{ route('classrooms.index') }}">{{ __('click here') }} </a>
+                </div>
             </div>
         </div>
     </div>
 </x-app-layout>
-

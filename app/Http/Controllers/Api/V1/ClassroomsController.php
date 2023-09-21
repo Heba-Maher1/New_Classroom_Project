@@ -2,88 +2,79 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
-use App\Http\Resources\ClassroomCollection;
-use App\Http\Resources\ClassroomResource;
+use Throwable;
 use App\Models\Classroom;
-
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Validation\Rule;
-use Throwable;
+use App\Http\Resources\ClassroomResource;
 
-class ClassroomsController extends Controller
+class ClassroomController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.read')){
+        if (!Auth::guard('sanctum')->user()->tokenCan('classrooms.read')) {
             abort(403);
-        }
+        };
+        
+        $classrooms = Classroom::with('user:id,name', 'topics')
+            ->withCount('students as students')
+            ->paginate(2); 
 
-         // return the data of classroom with the data of user relationship and topics relationship
-        // return Classroom::with('user:id,name' , 'topics')->withCount('students')->get(); // return the data of classroom with the data of user relationship and topics relationship
-        // return Classroom::all();
-        // return Classroom::paginate();
-        $classrooms = Classroom::with('user:id,name' , 'topics')->withCount('students')->get(); 
-
-        // return ClassroomResource::collection($classrooms); // using resource
-        return new ClassroomCollection($classrooms); // using resource collection
-
+        return ClassroomResource::collection($classrooms);
+        
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
-
-        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.create')){
+        if (!Auth::guard('sanctum')->user()->tokenCan('classrooms.create')) {
             abort(403);
+        };
+
+        try {
+            $request->validate([
+                'name' => ['required']
+            ]);
+        } catch (Throwable $e) {
+            return response()->json(
+                [
+                    'message' => $e->getMessage(),
+                ], 422);
         }
-
-        $request->validate([
-            'name' => ['required']
-        ]);
-
         $classroom = Classroom::create($request->all());
 
         return Response::json([
             'code' => 100,
-            'message' => __('Classroom created.'),
+            'message' => __('Classroom Created.'),
             'classroom' => $classroom,
-        ] , 201);
+        ] , 201 );
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(Classroom $classroom)
     {
-
-        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.read')){
+        if (!Auth::guard('sanctum')->user()->tokenCan('classrooms.read')) {
             abort(403);
-        }
+        };
 
         return new ClassroomResource($classroom->load('user')->loadCount('students'));
+        
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, Classroom $classroom)
     {
-
-        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.update')){
+        if (!Auth::guard('sanctum')->user()->tokenCan('classrooms.update')) {
             abort(403);
-        }
+        };
 
         $request->validate([
-            'name' => ['sometimes' ,'required' , Rule::unique('classrooms' , 'name')->ignore($classroom->id)],
-            'section' => ['sometimes']
+            'name' => ['sometimes' , 'required' , Rule::unique('classrooms' , 'name')->ignore($classroom->id)],
+            'section' => ['sometimes' , 'required']
         ]);
 
         $classroom->update($request->all());
@@ -95,18 +86,16 @@ class ClassroomsController extends Controller
         ];
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
+        if (!Auth::guard('sanctum')->user()->tokenCan('classrooms.delete')) {
+            abort(403);
+        };
 
-        if(!Auth::guard('sanctum')->user()->tokenCan('classrooms.delete')){
-            abort(403 , 'You Cannot delete this classroom');
-        }
+        Classroom::findOrFail($id)->delete();
 
-        Classroom::destroy($id);
+        return response()->json([] ,204);
 
-        return Response::json([] , 204);
     }
 }

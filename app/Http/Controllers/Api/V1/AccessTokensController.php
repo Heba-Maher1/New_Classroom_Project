@@ -28,16 +28,12 @@ class AccessTokensController extends Controller
             'abilities' => ['array'],
         ]);
 
-        // Auth::guard('sanctum')->attempt([
-        //     'email'
-        // ]);
-
         $user = User::whereEmail($request->email)->first();
 
         if($user && Hash::check($request->password , $user->password)){
             $name = $request->post('device_name' , $request->userAgent());
             $abilities = $request->post('abilities' , ['*']);
-            $token = $user->createToken($name , $abilities , now()->addDays(30)); // retrieve object token
+            $token = $user->createToken($name , $abilities , now()->addDays(30));
 
             return Response::json([
                 'token' => $token->plainTextToken,

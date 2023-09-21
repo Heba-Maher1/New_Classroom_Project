@@ -24,7 +24,6 @@ class TopicRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|min:5',
             'classroom_id' => 'int|exists:classrooms,id' ,
-            'user_id' => 'nullable|int|exists:users,id' ,
         ];
         }
 

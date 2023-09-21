@@ -1,4 +1,4 @@
-<div class=" mb-4 position-relative overflow-hidden lh-lg border rounded" style="width: 18.75rem;height: 18.375rem;">
+<div class="classroom-card mb-4 position-relative overflow-hidden lh-lg border rounded" style="width: 18.75rem;height: 18.375rem;">
     <div class="image position-relative">
       @if('storage/{{ $image }}')
       <img class="card-img-top" src="storage/{{ $image }}" alt="Card image cap" style="height:8rem;">
@@ -19,12 +19,17 @@
       
       <div class="buttons d-flex justify-content-end border-top position-absolute p-1" style="bottom: 0;width:100%">
         <a href="{{ route ('classrooms.show' , $id)}}" class="btn"><i class="fa-solid fa-eye"></i></a>
+        @can('update' , ['App\Models\Classroom', $classroom])
         <a href="{{ route ('classrooms.edit' , $id)}}" class="btn"><i class="fa-solid fa-pen"></i></a>
+        @endcan
+        @can('delete' , ['App\Models\Classroom', $classroom])
         <form action="{{ route ('classrooms.destroy' , $id)}}" method="post">
           @csrf
           @method('delete')
           <button type="submit" class="btn"><i class="fa-solid fa-trash"></i></button> 
         </form>
+        @endcan
+
       </div>
    </div>
 </div>

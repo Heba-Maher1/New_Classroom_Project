@@ -18,6 +18,10 @@ class UserNotificationMenu extends Component
     public function __construct($count = 10)
     {
         $user = Auth ::user();
+        $this->notifications  = [];
+        if(!$user){
+            return;
+        }
         $this->notifications = $user->notifications()->take($count)->get();
         $this->unreadCount = $user->unreadNotifications()->count();
     }
